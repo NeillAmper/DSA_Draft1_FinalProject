@@ -1,23 +1,28 @@
-
 package com.mycompany.finalproject_allawan_amper;
 
 import java.util.*;
 
 public class Game {
-    private final Hero hero;
-    private final Random random = new Random();
-    // Monster name pools (LinkedLists for O(1) removal)
-    private final LinkedList<String> firstNames = new LinkedList<>();
-    private final LinkedList<String> lastNames = new LinkedList<>();
+
+    private Hero hero;
+    private Dungeon dungeon;
+    private Random random = new Random();
+
+    // Monster name pools
+    private LinkedList<String> firstNames = new LinkedList<>();
+    private LinkedList<String> lastNames = new LinkedList<>();
 
     public Game() {
         this.hero = new Hero();
-        // Populate name pools (add as many as you wish)
+        this.dungeon = new Dungeon();
+
+        // Populate name pools
         firstNames.addAll(Arrays.asList(
                 "Neill", "Joshua", "Mitch", "Reyian", "Nico", "Adriane", "Qiann", "Tans", "Super Human", "Anton"
         ));
         lastNames.addAll(Arrays.asList(
-                "From Tiggato", "of Maa", "The Balut", "of Maa", "Bad genius", "Eucare", "Pokemon", "Eucare", "Amper", "of Matina Aplaya", "Lerasan", "Canja", "Vergara", "The Hero"
+                "From Tiggato", "of Maa", "The Balut", "of Maa", "Bad genius", "Eucare", "Pokemon", "Eucare",
+                "Amper", "of Matina Aplaya", "Lerasan", "Canja", "Vergara", "The Hero"
         ));
     }
 
@@ -25,14 +30,28 @@ public class Game {
         Scanner scanner = new Scanner(System.in);
         boolean exitGame = false;
 
-        while (!exitGame && !firstNames.isEmpty() && !lastNames.isEmpty() && hero.getHp() > 0) {
-            // Generate a random monster name
-            int firstIndex = random.nextInt(firstNames.size());
-            int lastIndex = random.nextInt(lastNames.size());
-            String monsterName = firstNames.remove(firstIndex) + " " + lastNames.remove(lastIndex);
+        while (!exitGame && dungeon.hasRooms() && hero.getHp() > 0) {
+            String currentRoom = dungeon.nextRoom();
+            System.out.println("\nYou enter: " + currentRoom);
 
-            Monster monster = new Monster(monsterName);
-            System.out.println("\nYOU ENCOUNTERED AN ENEMY: " + monsterName + "!");
+            Monster monster;
+            String monsterName;
+            if (currentRoom.equalsIgnoreCase("Boss Lair")) {
+                monsterName = "Dungeon Boss";
+                monster = new Monster(monsterName);
+            } else {
+                // Pull random monster name from pool if available
+                if (firstNames.isEmpty() || lastNames.isEmpty()) {
+                    System.out.println("No more unique monster names left!");
+                    break;
+                }
+                int firstIndex = random.nextInt(firstNames.size());
+                int lastIndex = random.nextInt(lastNames.size());
+                monsterName = firstNames.remove(firstIndex) + " " + lastNames.remove(lastIndex);
+                monster = new Monster(monsterName);
+            }
+
+            System.out.println("YOU ENCOUNTERED AN ENEMY: " + monsterName + "!");
 
             // Battle loop
             while (hero.getHp() > 0 && monster.getHp() > 0) {
@@ -51,26 +70,21 @@ public class Game {
             }
 
             // Continue or exit?
-            if (!exitGame && (!firstNames.isEmpty() && !lastNames.isEmpty()) && hero.getHp() > 0) {
+            if (!exitGame && dungeon.hasRooms() && hero.getHp() > 0) {
                 while (true) {
-                    System.out.print("Do you want to continue to fight another monster? (yes/exit): ");
+                    System.out.print("Proceed to the next room? (yes/exit): ");
                     String nextAction = scanner.next();
                     if (nextAction.equalsIgnoreCase("exit")) {
-                        System.out.println("You exited the game.");
                         exitGame = true;
                         break;
                     } else if (nextAction.equalsIgnoreCase("yes")) {
                         break;
                     } else {
-                        System.out.println("Invalid input. Please type 'yes' to continue or 'exit' to quit.");
+                        System.out.println("Invalid input. Please type 'yes' or 'exit'.");
                     }
                 }
-            } else if (firstNames.isEmpty() || lastNames.isEmpty()) {
-                System.out.println("No more unique monster names left. You have defeated all possible monsters!");
-                exitGame = true;
             }
         }
-
         System.out.println("Game Over.");
     }
 }
