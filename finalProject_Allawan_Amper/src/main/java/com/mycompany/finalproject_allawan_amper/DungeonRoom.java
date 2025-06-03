@@ -23,7 +23,7 @@ public class DungeonRoom {
     public void connectRoom(DungeonRoom room) {
         if (!connections.contains(room)) {
             connections.add(room);
-            // For undirected graph (bi-directional paths):
+            // For undirected graph
             room.connections.add(this);
         }
     }

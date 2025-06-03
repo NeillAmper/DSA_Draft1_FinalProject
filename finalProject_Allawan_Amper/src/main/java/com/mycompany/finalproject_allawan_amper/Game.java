@@ -35,30 +35,12 @@ public class Game {
             System.out.println("\nYou are now in: " + currentRoom.getName());
             visited.add(currentRoom.getName());
 
-            // Boss Lair ends the game
-            if (currentRoom.getName().equalsIgnoreCase("Boss Lair")) {
-                System.out.println("The Boss emerges!");
-                Monster boss = new Monster("Dungeon Boss");
-                runBattle(boss, scanner);
-                break;
-            } else {
-                // Normal room encounter
-                if (!firstNames.isEmpty() && !lastNames.isEmpty()) {
-                    int firstIndex = random.nextInt(firstNames.size());
-                    int lastIndex = random.nextInt(lastNames.size());
-                    String monsterName = firstNames.remove(firstIndex) + " " + lastNames.remove(lastIndex);
-                    Monster monster = new Monster(monsterName);
-                    System.out.println("YOU ENCOUNTERED AN ENEMY: " + monsterName + "!");
-                    runBattle(monster, scanner);
-                    if (hero.getHp() <= 0) break;
-                } else {
-                    System.out.println("No more unique monster names left!");
-                    break;
-                }
-            }
-
-            // Show map choices
+            // Show choices at EVERY room (including the entrance, before any battle)
             List<DungeonRoom> options = currentRoom.getConnections();
+            if (options.isEmpty()) {
+                System.out.println("No more rooms to explore.");
+                break;
+            }
             System.out.println("\nWhere do you want to go next?");
             for (int i = 0; i < options.size(); i++) {
                 System.out.println((i + 1) + ". " + options.get(i).getName() + (visited.contains(options.get(i).getName()) ? " (visited)" : ""));
@@ -77,8 +59,33 @@ public class Game {
             if (choice == options.size() + 1) {
                 System.out.println("You chose to exit the dungeon.");
                 exitGame = true;
+                break;
             } else {
                 currentRoom = options.get(choice - 1);
+            }
+
+            // After moving, run the encounter
+            if (currentRoom.getName().equalsIgnoreCase("Boss Lair")) {
+                System.out.println("The Boss emerges!");
+                Monster boss = new Monster("Dungeon Boss");
+                runBattle(boss, scanner);
+                break;
+            } else if (!visited.contains(currentRoom.getName()) || currentRoom.getConnections().size() == 1) {
+                // Only fight in a room if you haven't visited it before, or it's a dead-end
+                if (!firstNames.isEmpty() && !lastNames.isEmpty()) {
+                    int firstIndex = random.nextInt(firstNames.size());
+                    int lastIndex = random.nextInt(lastNames.size());
+                    String monsterName = firstNames.remove(firstIndex) + " " + lastNames.remove(lastIndex);
+                    Monster monster = new Monster(monsterName);
+                    System.out.println("YOU ENCOUNTERED AN ENEMY: " + monsterName + "!");
+                    runBattle(monster, scanner);
+                    if (hero.getHp() <= 0) break;
+                } else {
+                    System.out.println("No more unique monster names left!");
+                    break;
+                }
+            } else {
+                System.out.println("You've already cleared this room. It's eerily quiet...");
             }
         }
         System.out.println("Game Over.");

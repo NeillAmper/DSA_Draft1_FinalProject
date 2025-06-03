@@ -4,7 +4,7 @@ package com.mycompany.finalproject_allawan_amper;
 import java.util.*;
 
 public class Dungeon {
-    private Map<String, DungeonRoom> rooms; // Like a dictionary for fast lookup
+    private Map<String, DungeonRoom> rooms;
     private DungeonRoom startRoom;
 
     public Dungeon() {
@@ -13,7 +13,6 @@ public class Dungeon {
     }
 
     private void createDungeonMap() {
-        // Create rooms
         DungeonRoom entrance = new DungeonRoom("Entrance");
         DungeonRoom trapRoom = new DungeonRoom("Trap Room");
         DungeonRoom treasureRoom = new DungeonRoom("Treasure Room");
@@ -21,7 +20,6 @@ public class Dungeon {
         DungeonRoom restRoom = new DungeonRoom("Rest Area");
         DungeonRoom bossLair = new DungeonRoom("Boss Lair");
 
-        // Connect rooms (define map)
         entrance.connectRoom(trapRoom);
         entrance.connectRoom(treasureRoom);
 
@@ -31,7 +29,6 @@ public class Dungeon {
         puzzleRoom.connectRoom(bossLair);
         restRoom.connectRoom(bossLair);
 
-        // Add to map for lookup
         rooms.put(entrance.getName(), entrance);
         rooms.put(trapRoom.getName(), trapRoom);
         rooms.put(treasureRoom.getName(), treasureRoom);
