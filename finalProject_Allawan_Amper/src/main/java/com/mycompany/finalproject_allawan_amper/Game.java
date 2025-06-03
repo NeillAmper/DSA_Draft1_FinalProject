@@ -3,7 +3,6 @@ package com.mycompany.finalproject_allawan_amper;
 import java.util.*;
 
 public class Game {
-
     private Hero hero;
     private Dungeon dungeon;
     private Random random = new Random();
@@ -18,73 +17,87 @@ public class Game {
 
         // Populate name pools
         firstNames.addAll(Arrays.asList(
-                "Neill", "Joshua", "Mitch", "Reyian", "Nico", "Adriane", "Qiann", "Tans", "Super Human", "Anton"
+            "Neill", "Joshua", "Mitch", "Reyian", "Nico", "Adriane", "Qiann", "Tans", "Super Human", "Anton"
         ));
         lastNames.addAll(Arrays.asList(
-                "From Tiggato", "of Maa", "The Balut", "of Maa", "Bad genius", "Eucare", "Pokemon", "Eucare",
-                "Amper", "of Matina Aplaya", "Lerasan", "Canja", "Vergara", "The Hero"
+            "From Tiggato", "of Maa", "The Balut", "of Maa", "Bad genius", "Eucare", "Pokemon", "Eucare",
+            "Amper", "of Matina Aplaya", "Lerasan", "Canja", "Vergara", "The Hero"
         ));
     }
 
     public void start() {
         Scanner scanner = new Scanner(System.in);
         boolean exitGame = false;
+        DungeonRoom currentRoom = dungeon.getStartRoom();
+        Set<String> visited = new HashSet<>();
 
-        while (!exitGame && dungeon.hasRooms() && hero.getHp() > 0) {
-            String currentRoom = dungeon.nextRoom();
-            System.out.println("\nYou enter: " + currentRoom);
+        while (!exitGame && hero.getHp() > 0) {
+            System.out.println("\nYou are now in: " + currentRoom.getName());
+            visited.add(currentRoom.getName());
 
-            Monster monster;
-            String monsterName;
-            if (currentRoom.equalsIgnoreCase("Boss Lair")) {
-                monsterName = "Dungeon Boss";
-                monster = new Monster(monsterName);
+            // Boss Lair ends the game
+            if (currentRoom.getName().equalsIgnoreCase("Boss Lair")) {
+                System.out.println("The Boss emerges!");
+                Monster boss = new Monster("Dungeon Boss");
+                runBattle(boss, scanner);
+                break;
             } else {
-                // Pull random monster name from pool if available
-                if (firstNames.isEmpty() || lastNames.isEmpty()) {
+                // Normal room encounter
+                if (!firstNames.isEmpty() && !lastNames.isEmpty()) {
+                    int firstIndex = random.nextInt(firstNames.size());
+                    int lastIndex = random.nextInt(lastNames.size());
+                    String monsterName = firstNames.remove(firstIndex) + " " + lastNames.remove(lastIndex);
+                    Monster monster = new Monster(monsterName);
+                    System.out.println("YOU ENCOUNTERED AN ENEMY: " + monsterName + "!");
+                    runBattle(monster, scanner);
+                    if (hero.getHp() <= 0) break;
+                } else {
                     System.out.println("No more unique monster names left!");
                     break;
                 }
-                int firstIndex = random.nextInt(firstNames.size());
-                int lastIndex = random.nextInt(lastNames.size());
-                monsterName = firstNames.remove(firstIndex) + " " + lastNames.remove(lastIndex);
-                monster = new Monster(monsterName);
             }
 
-            System.out.println("YOU ENCOUNTERED AN ENEMY: " + monsterName + "!");
+            // Show map choices
+            List<DungeonRoom> options = currentRoom.getConnections();
+            System.out.println("\nWhere do you want to go next?");
+            for (int i = 0; i < options.size(); i++) {
+                System.out.println((i + 1) + ". " + options.get(i).getName() + (visited.contains(options.get(i).getName()) ? " (visited)" : ""));
+            }
+            System.out.println((options.size() + 1) + ". Exit dungeon");
 
-            // Battle loop
-            while (hero.getHp() > 0 && monster.getHp() > 0) {
-                System.out.println("Player Hp: " + hero.getHp());
-                System.out.println(monsterName + " Hp: " + monster.getHp());
-                hero.playerTurn(monster, scanner, random);
-                if (monster.getHp() <= 0) {
-                    System.out.println("Congratulations! You defeated " + monsterName + "!");
-                    break;
-                }
-                monster.monsterTurn(hero, random);
-                if (hero.getHp() <= 0) {
-                    System.out.println("You lost! " + monsterName + " wins!");
-                    break;
+            int choice = -1;
+            while (choice < 1 || choice > options.size() + 1) {
+                System.out.print("Enter choice: ");
+                try {
+                    choice = Integer.parseInt(scanner.next());
+                } catch (Exception e) {
+                    choice = -1;
                 }
             }
-
-            // Continue or exit?
-            if (!exitGame && dungeon.hasRooms() && hero.getHp() > 0) {
-                while (true) {
-                    System.out.print("Proceed to the next room? (yes/exit): ");
-                    String nextAction = scanner.next();
-                    if (nextAction.equalsIgnoreCase("exit")) {
-                        exitGame = true;
-                        break;
-                    } else if (nextAction.equalsIgnoreCase("yes")) {
-                        break;
-                    } else {
-                        System.out.println("Invalid input. Please type 'yes' or 'exit'.");
-                    }
-                }
+            if (choice == options.size() + 1) {
+                System.out.println("You chose to exit the dungeon.");
+                exitGame = true;
+            } else {
+                currentRoom = options.get(choice - 1);
             }
         }
         System.out.println("Game Over.");
+    }
+
+    private void runBattle(Monster monster, Scanner scanner) {
+        while (hero.getHp() > 0 && monster.getHp() > 0) {
+            System.out.println("Player Hp: " + hero.getHp());
+            System.out.println(monster.getName() + " Hp: " + monster.getHp());
+            hero.playerTurn(monster, scanner, random);
+            if (monster.getHp() <= 0) {
+                System.out.println("Congratulations! You defeated " + monster.getName() + "!");
+                break;
+            }
+            monster.monsterTurn(hero, random);
+            if (hero.getHp() <= 0) {
+                System.out.println("You lost! " + monster.getName() + " wins!");
+                break;
+            }
+        }
     }
 }

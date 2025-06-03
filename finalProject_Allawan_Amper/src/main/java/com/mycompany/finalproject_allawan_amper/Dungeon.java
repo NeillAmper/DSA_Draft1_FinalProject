@@ -1,26 +1,52 @@
 
 package com.mycompany.finalproject_allawan_amper;
 
-import java.util.LinkedList;
+import java.util.*;
 
 public class Dungeon {
-    // LinkedList for dynamic room management
-    private LinkedList<String> rooms = new LinkedList<>();
+    private Map<String, DungeonRoom> rooms; // Like a dictionary for fast lookup
+    private DungeonRoom startRoom;
 
     public Dungeon() {
-        // Example setup
-        rooms.add("Entrance");
-        rooms.add("Trap Room");
-        rooms.add("Treasure Room");
-        rooms.add("Boss Lair");
+        rooms = new HashMap<>();
+        createDungeonMap();
     }
 
-    public String nextRoom() {
-        if (!rooms.isEmpty()) return rooms.poll();
-        return null;
+    private void createDungeonMap() {
+        // Create rooms
+        DungeonRoom entrance = new DungeonRoom("Entrance");
+        DungeonRoom trapRoom = new DungeonRoom("Trap Room");
+        DungeonRoom treasureRoom = new DungeonRoom("Treasure Room");
+        DungeonRoom puzzleRoom = new DungeonRoom("Puzzle Chamber");
+        DungeonRoom restRoom = new DungeonRoom("Rest Area");
+        DungeonRoom bossLair = new DungeonRoom("Boss Lair");
+
+        // Connect rooms (define map)
+        entrance.connectRoom(trapRoom);
+        entrance.connectRoom(treasureRoom);
+
+        trapRoom.connectRoom(puzzleRoom);
+        treasureRoom.connectRoom(restRoom);
+
+        puzzleRoom.connectRoom(bossLair);
+        restRoom.connectRoom(bossLair);
+
+        // Add to map for lookup
+        rooms.put(entrance.getName(), entrance);
+        rooms.put(trapRoom.getName(), trapRoom);
+        rooms.put(treasureRoom.getName(), treasureRoom);
+        rooms.put(puzzleRoom.getName(), puzzleRoom);
+        rooms.put(restRoom.getName(), restRoom);
+        rooms.put(bossLair.getName(), bossLair);
+
+        startRoom = entrance;
     }
 
-    public boolean hasRooms() {
-        return !rooms.isEmpty();
+    public DungeonRoom getStartRoom() {
+        return startRoom;
+    }
+
+    public DungeonRoom getRoom(String name) {
+        return rooms.get(name);
     }
 }
